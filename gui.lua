@@ -1,7 +1,7 @@
 local baseName = "NotificationsOptionsPanel"
 
 -- these variables are loaded on init and updated only on gui.okay. Calling gui.cancel resets the saved vars to these
-local old = {}
+--[[local old = {}
 
 -- function to copy table contents and inner table
 local function copyTable(source, target)
@@ -15,7 +15,7 @@ local function copyTable(source, target)
 			target[key] = value
 		end
 	end
-end
+end]]
 
 -- create frames/widgets
 
@@ -192,18 +192,6 @@ gui:SetScript("OnEvent", function(self, _, addon)
 	-- fill 'old' table
 	copyTable(AuroraConfig, old)
 	
-	gui.refresh()
-	
-	F.Reskin(reloadButton)
-	F.Reskin(colourButton)
-	F.ReskinCheck(fontBox)
-	F.ReskinCheck(colourBox)
-	F.ReskinCheck(bagsBox)
-	F.ReskinCheck(lootBox)
-	F.ReskinCheck(mapBox)
-	F.ReskinCheck(tooltipsBox)
-	F.ReskinSlider(alphaSlider)
-	
 	self:UnregisterEvent("ADDON_LOADED")
 end)
 
@@ -272,4 +260,4 @@ end)]]
 SlashCmdList.NOTIFICATIONS = function()
 	InterfaceOptionsFrame_OpenToCategory(gui)
 end
-SLASH_AURORA1 = "/notifications"
+SLASH_NOTIFICATIONS1 = "/notifications"
