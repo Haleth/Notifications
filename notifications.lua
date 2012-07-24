@@ -67,18 +67,25 @@ f.options = options
 local bannerShown = false
 
 local function hideBanner()
-	local scale
-	f:SetScript("OnUpdate", function(self)
-		scale = self:GetScale() - options.interval
-		if scale <= 0.1 then
-			self:SetScript("OnUpdate", nil)
-			self:Hide()
-			bannerShown = false
-			return
-		end
-		self:SetScale(scale)
-		self:SetAlpha(scale)
-	end)
+	if options.animations then
+		local scale
+		f:SetScript("OnUpdate", function(self)
+			scale = self:GetScale() - options.interval
+			if scale <= 0.1 then
+				self:SetScript("OnUpdate", nil)
+				self:Hide()
+				bannerShown = false
+				return
+			end
+			self:SetScale(scale)
+			self:SetAlpha(scale)
+		end)
+	else
+		f:Hide()
+		f:SetScale(0.1)
+		f:SetAlpha(0.1)
+		bannerShown = false
+	end
 end
 
 local function fadeTimer()
@@ -94,18 +101,25 @@ end
 
 local function showBanner()
 	bannerShown = true
-	f:Show()
-	local scale
-	f:SetScript("OnUpdate", function(self)
-		scale = self:GetScale() + options.interval
-		self:SetScale(scale)
-		self:SetAlpha(scale)
-		if scale >= 1 then
-			self:SetScale(1)
-			self:SetScript("OnUpdate", nil)
-			fadeTimer()
-		end
-	end)	
+	if options.animations then
+		f:Show()
+		local scale
+		f:SetScript("OnUpdate", function(self)
+			scale = self:GetScale() + options.interval
+			self:SetScale(scale)
+			self:SetAlpha(scale)
+			if scale >= 1 then
+				self:SetScale(1)
+				self:SetScript("OnUpdate", nil)
+				fadeTimer()
+			end
+		end)
+	else
+		f:SetScale(1)
+		f:SetAlpha(1)
+		f:Show()
+		fadeTimer()
+	end
 end
 
 -- Display a notification
@@ -236,8 +250,6 @@ function Notifications:Update()
 	text:SetShadowColor(options.shadowRed, options.shadowGreen, options.shadowBlue)
 end
 
-Notifications:Update()
-
 -- Mouse events
 
 f:SetScript("OnEnter", function(self)
@@ -258,6 +270,26 @@ f:SetScript("OnMouseUp", function(self, button)
 	if button ~= "RightButton" and f.clickFunc then
 		f.clickFunc()
 	end
+end)
+
+-- Load saved variables if present
+
+f:RegisterEvent("ADDON_LOADED")
+f:SetScript("OnEvent", function(self, _, addon)
+	if addon ~= "Notifications" then return end
+	self:UnregisterEvent("ADDON_LOADED")
+	
+	local vars = NotificationsOptions
+	
+	if not vars then vars = {} end
+
+	for option in pairs(options) do
+		if vars[option] ~= nil then
+			options[option] = vars[option]
+		end
+	end
+	
+	Notifications:Update()
 end)
 
 -- Test function
