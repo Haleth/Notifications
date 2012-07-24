@@ -37,6 +37,7 @@ credits:SetPoint("BOTTOM", 0, 188)
 
 local checkboxes = {}
 local sliders = {}
+local dropdowns = {}
 
 local function toggle(f)
 	-- first we set the variable, then we set the cached setting
@@ -92,6 +93,42 @@ local function createSlider(name, option, text, lowText, highText, low, high, st
 	return f
 end
 
+local function OnClick(self)
+	local f = select(2, self:GetParent():GetPoint())
+	UIDropDownMenu_SetSelectedID(f, self:GetID())
+	NotificationsOptions[f.option] = self.value
+	Notifications.options[f.option] = self.value
+	
+	Notifications:Update()
+end
+
+local function initialize(self)
+	for _, v in pairs(self.items) do
+		local info = UIDropDownMenu_CreateInfo()
+		info.text = v
+		info.value = strupper(strconcat(strsplit(" ", v)))
+		info.func = OnClick
+		UIDropDownMenu_AddButton(info)
+	end
+end
+
+local function createDropDown(name, option, text, items) 
+	local f = CreateFrame("Button", baseName..name, gui, "UIDropDownMenuTemplate")
+
+	f.option = option
+	f.items = items
+	
+	local label = f:CreateFontString(nil, "BACKGROUND", "GameFontNormalSmall")
+	label:SetPoint("BOTTOMLEFT", f, "TOPLEFT", 16, 3)
+	label:SetText(text)
+	
+	UIDropDownMenu_Initialize(f, initialize)
+	UIDropDownMenu_SetWidth(f, 100)
+	
+	tinsert(dropdowns, f)
+	
+	return f
+end
 
 local playSounds = createCheckBox("PlaySounds", "playSounds", "Play sound")
 playSounds:SetPoint("TOPLEFT", title, 0, -26)
@@ -107,6 +144,9 @@ intervalLabel:SetText("A slower animation speed ensures a smoother animation.")
 local timeShown = createSlider("TimeShown", "timeShown", "Time shown", TOAST_DURATION_SHORT, TOAST_DURATION_LONG, 1, 15, 1)
 timeShown:SetPoint("TOPLEFT", intervalLabel, "BOTTOMLEFT", -12, -24)
 
+local position = createDropDown("Position", "position", "Position", {"Top", "Top Right", "Right", "Bottom Right", "Bottom", "Bottom Left", "Left", "Top Left"})
+position:SetPoint("TOPLEFT", timeShown, "BOTTOMLEFT", 0, -24)
+
 if Aurora or FreeUI then
 	local F = unpack(Aurora or FreeUI)
 	
@@ -116,6 +156,10 @@ if Aurora or FreeUI then
 	
 	for _, slider in pairs(sliders) do
 		F.ReskinSlider(slider)
+	end
+	
+	for _, dropdown in pairs(dropdowns) do
+		F.ReskinDropDown(dropdown)
 	end
 end
 
@@ -130,6 +174,16 @@ gui.refresh = function()
 		slider:SetValue(Notifications.options[slider.option])
 	end
 end
+
+gui:RegisterEvent("ADDON_LOADED")
+gui:SetScript("OnEvent", function()
+	gui:UnregisterEvent("ADDON_LOADED")
+	
+	-- because dropdowns are "special" and don't play nicely with refresh()
+	for _, dropdown in pairs(dropdowns) do
+		UIDropDownMenu_SetSelectedValue(dropdown, Notifications.options[dropdown.option])
+	end
+end)
 
 --[[gui:RegisterEvent("ADDON_LOADED")
 gui:SetScript("OnEvent", function(self, _, addon)

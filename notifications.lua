@@ -7,6 +7,7 @@ local options = {
 	timeShown = 5, -- amount of time the banner is shown before it disappears. Mousing over the banner keeps it shown.
 	interval = 0.1, -- difference in opacity/scale per new frame when the banner animates. Lower = smoother, but also slower.
 
+	position = "TOP", -- choose a side of the screen
 	width = 400,
 	height = 50,
 	iconSize = 32,
@@ -207,7 +208,20 @@ end
 
 function Notifications:Update()
 	f:SetSize(options.width, options.height)
-	f:SetPoint("TOP", UIParent, "TOP", 0, options.borderSize)
+	local position = options.position
+	local x, y = 0
+	if position:find("TOP") then
+		y = options.borderSize
+	elseif position:find("BOTTOM") then
+		y = -options.borderSize
+	end
+	if position:find("LEFT") then
+		x = -options.borderSize
+	elseif position:find("RIGHT") then
+		x = options.borderSize
+	end
+	f:ClearAllPoints()
+	f:SetPoint(position, UIParent, position, x, y)
 	f:SetBackdrop({
 		bgFile = options.border,
 		edgeFile = options.backdrop,
