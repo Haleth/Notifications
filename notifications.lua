@@ -37,7 +37,7 @@ local options = {
 -- Create frame and stuff
 
 local f = CreateFrame("Frame", "Notifications", UIParent)
-f:SetFrameStrata("DIALOG")
+f:SetFrameStrata("FULLSCREEN_DIALOG")
 f:Hide()
 f:SetAlpha(0.1)
 f:SetScale(0.1)
