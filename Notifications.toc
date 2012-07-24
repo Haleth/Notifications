@@ -1,5 +1,5 @@
 ## Interface: 40300
-## Version: 1.0
+## Version: 1.0.1
 ## Title: Notifications
 ## Notes: Framework for addons to display notifications.
 ## Author: Haleth/Freethinker

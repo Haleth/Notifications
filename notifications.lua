@@ -37,6 +37,7 @@ local options = {
 -- Create frame and stuff
 
 local f = CreateFrame("Frame", "Notifications", UIParent)
+f:SetFrameStrata("DIALOG")
 f:Hide()
 f:SetAlpha(0.1)
 f:SetScale(0.1)
@@ -266,6 +267,6 @@ local function testCallback()
 end
 
 SlashCmdList.TESTALERT = function(b)
-	Notifications:Alert("This is a sample of a notification.", testCallback, b == "true" and "INTERFACE\\ICONS\\SPELL_FROST_ARCTICWINDS" or nil, .08, .92, .08, .92)
+	Notifications:Alert("This is an example of a notification.", testCallback, b == "true" and "INTERFACE\\ICONS\\SPELL_FROST_ARCTICWINDS" or nil, .08, .92, .08, .92)
 end
 SLASH_TESTALERT1 = "/testalert"
