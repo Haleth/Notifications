@@ -1,21 +1,33 @@
 local baseName = "NotificationsOptionsPanel"
 
 -- these variables are loaded on init and updated only on gui.okay. Calling gui.cancel resets the saved vars to these
---[[local old = {}
+local old = {}
 
--- function to copy table contents and inner table
+-- function to copy table by value
 local function copyTable(source, target)
 	for key, value in pairs(source) do
 		if type(value) == "table" then
 			target[key] = {}
-			for k, v in pairs(value) do
-				target[key][k] = value[k]
-			end
+			copyTable(value, target[key])
 		else
 			target[key] = value
 		end
 	end
-end]]
+end
+
+-- function to copy table only when equivalent keys exist in target table
+local function copyTableExisting(source, target)
+	for key, value in pairs(source) do
+		if target[key] ~= nil then -- we don't want to set saved vars if they don't exist yet
+			if type(value) == "table" then
+				target[key] = {}
+				copyTable(value, target[key])
+			else
+				target[key] = value
+			end
+		end
+	end
+end
 
 -- create frames/widgets
 
@@ -147,22 +159,6 @@ timeShown:SetPoint("TOPLEFT", intervalLabel, "BOTTOMLEFT", -12, -24)
 local position = createDropDown("Position", "position", "Position", {"Top", "Top Right", "Right", "Bottom Right", "Bottom", "Bottom Left", "Left", "Top Left"})
 position:SetPoint("TOPLEFT", timeShown, "BOTTOMLEFT", 0, -24)
 
-if Aurora or FreeUI then
-	local F = unpack(Aurora or FreeUI)
-	
-	for _, box in pairs(checkboxes) do
-		F.ReskinCheck(box)
-	end
-	
-	for _, slider in pairs(sliders) do
-		F.ReskinSlider(slider)
-	end
-	
-	for _, dropdown in pairs(dropdowns) do
-		F.ReskinDropDown(dropdown)
-	end
-end
-
 -- add event handlers
 
 gui.refresh = function()
@@ -175,56 +171,39 @@ gui.refresh = function()
 	end
 end
 
+gui.okay = function()
+	-- refresh the 'old' table for the next gui.cancel()
+	copyTable(Notifications.options, old)
+end
+
+gui.cancel = function()
+	-- copy the old values to the cache and to saved vars if they exist
+	copyTable(old, Notifications.options)
+	copyTableExisting(old, NotificationsOptions)
+	
+	Notifications:Update()
+	--gui.refresh()
+end
+
 gui:RegisterEvent("ADDON_LOADED")
 gui:SetScript("OnEvent", function()
 	gui:UnregisterEvent("ADDON_LOADED")
 	
-	-- because dropdowns are "special" and don't play nicely with refresh()
+	-- backup the cache in case we call gui.cancel()
+	copyTable(Notifications.options, old)
+	
+	-- because dropdowns are "special" and don't play nicely with gui.refresh()
 	for _, dropdown in pairs(dropdowns) do
 		UIDropDownMenu_SetSelectedValue(dropdown, Notifications.options[dropdown.option])
 	end
 end)
 
---[[gui:RegisterEvent("ADDON_LOADED")
-gui:SetScript("OnEvent", function(self, _, addon)
-	if addon ~= "Aurora" then return end
-
-	-- fill 'old' table
-	copyTable(AuroraConfig, old)
-	
-	self:UnregisterEvent("ADDON_LOADED")
-end)
-
-local function updateFrames()
-	for i = 1, #C.frames do
-		F.CreateBD(C.frames[i], AuroraConfig.alpha)
-	end
-end
-
-gui.okay = function()
-	copyTable(AuroraConfig, old)
-end
-
-gui.cancel = function()
-	copyTable(old, AuroraConfig)
-	
-	updateFrames()
-	gui.refresh()
-end
-
+--[[
 gui.default = function()
 	copyTable(C.defaults, AuroraConfig)
 	
 	updateFrames()
 	gui.refresh()
-end
-
-reloadButton:SetScript("OnClick", ReloadUI)
-
-alphaSlider:SetScript("OnValueChanged", function(_, value)
-	AuroraConfig.alpha = value
-	updateFrames()
-end)
 
 colourBox:SetScript("OnClick", function(self)
 	if self:GetChecked() then
@@ -261,3 +240,21 @@ SlashCmdList.NOTIFICATIONS = function()
 	InterfaceOptionsFrame_OpenToCategory(gui)
 end
 SLASH_NOTIFICATIONS1 = "/notifications"
+
+-- Aurora theme support
+
+if Aurora or FreeUI then
+	local F = unpack(Aurora or FreeUI)
+	
+	for _, box in pairs(checkboxes) do
+		F.ReskinCheck(box)
+	end
+	
+	for _, slider in pairs(sliders) do
+		F.ReskinSlider(slider)
+	end
+	
+	for _, dropdown in pairs(dropdowns) do
+		F.ReskinDropDown(dropdown)
+	end
+end
