@@ -19,7 +19,7 @@ local options = {
 
 	bgRed = 0, bgGreen = 0, bgBlue = 0, bgAlpha = .5, -- colour of the backdrop.
 	borderRed = 0, borderGreen = 0, borderBlue = 0, borderAlpha = 1, -- colour of the border.
-	
+
 	separatorWidth = 1,
 	separatorUseRGB = true, -- use a plain colour instead of texture for separator
 	separatorTexture = "", -- only applies with separatorUseRGB disabled
@@ -31,7 +31,7 @@ local options = {
 	textRed = 1, textGreen = 1, textBlue = 1, -- text colour.
 	shadowRed = 0, shadowGreen = 0, shadowBlue = 0, -- font shadow colour.
 	shadowH = 1, shadowV = -1, -- horizontal and vertical offset for font shadow.
-	
+
 	defaultIcon = "Interface\\Icons\\achievement_general", -- icon shown when no texture is specified for the banner icon.
 }
 
@@ -137,18 +137,18 @@ local function display(name, message, clickFunc, texture, ...)
 	else
 		icon:SetTexture(options.defaultIcon)
 	end
-	
+
 	if ... then
 		icon:SetTexCoord(...)
 	else
 		icon:SetTexCoord(.08, .92, .08, .92)
 	end
-	
+
 	title:SetText(name)
 	text:SetText(message)
-	
+
 	showBanner()
-	
+
 	if options.playSounds == true then
 		PlaySoundFile("Interface\\AddOns\\Notifications\\sound.mp3")
 	end
@@ -230,12 +230,12 @@ function Notifications:Update()
 	})
 	f:SetBackdropColor(options.bgRed, options.bgGreen, options.bgBlue, options.bgAlpha)
 	f:SetBackdropBorderColor(options.borderRed, options.borderGreen, options.borderBlue, options.borderAlpha)
-	
+
 	local spacing = (options.height - (options.iconSize + (2 * options.borderSize))) / 2 -- distance between icon and banner border
 
 	icon:SetPoint("LEFT", f, "LEFT", spacing, 0)
 	icon:SetSize(options.iconSize, options.iconSize)
-	
+
 	iconBg:SetSize(options.iconSize + (options.borderSize * 2), options.iconSize + (options.borderSize * 2))
 	iconBg:SetBackdrop({
 		edgeFile = options.backdrop,
@@ -248,16 +248,16 @@ function Notifications:Update()
 	sep:SetPoint("LEFT", icon, "RIGHT", spacing, 0)
 	sep:SetTexture(options.separatorUseRGB == true and options.separatorRed, options.separatorGreen, options.separatorBlue or options.separatorTexture)
 	sep:SetAlpha(options.separatorAlpha)
-	
+
 	title:SetPoint("TOPLEFT", sep, "TOPRIGHT", spacing, -spacing)
-	title:SetPoint("RIGHT", f, -spacing, 0)	
+	title:SetPoint("RIGHT", f, -spacing, 0)
 	title:SetFont(options.font, options.fontSize + 2)
 	title:SetTextColor(options.textRed, options.textGreen, options.textBlue)
 	title:SetShadowOffset(options.shadowH, options.shadowV)
 	title:SetShadowColor(options.shadowRed, options.shadowGreen, options.shadowBlue)
 
 	text:SetPoint("BOTTOMLEFT", sep, "BOTTOMRIGHT", spacing, spacing)
-	text:SetPoint("RIGHT", f, -spacing, 0)	
+	text:SetPoint("RIGHT", f, -spacing, 0)
 	text:SetFont(options.font, options.fontSize)
 	text:SetTextColor(options.textRed, options.textGreen, options.textBlue)
 	text:SetShadowOffset(options.shadowH, options.shadowV)
@@ -292,17 +292,17 @@ f:RegisterEvent("ADDON_LOADED")
 f:SetScript("OnEvent", function(self, _, addon)
 	if addon ~= "Notifications" then return end
 	self:UnregisterEvent("ADDON_LOADED")
-	
+
+	if not NotificationsOptions then NotificationsOptions = {} end
+
 	local vars = NotificationsOptions
-	
-	if not vars then vars = {} end
 
 	for option in pairs(options) do
 		if vars[option] ~= nil then
 			options[option] = vars[option]
 		end
 	end
-	
+
 	Notifications:Update()
 end)
 
