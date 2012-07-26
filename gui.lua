@@ -45,7 +45,7 @@ version:SetText("v."..GetAddOnMetadata(..., "Version"))
 
 local credits = gui:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 credits:SetText("Notifications by Freethinker @ Steamwheedle Cartel - EU / Haleth on wowinterface.com")
-credits:SetPoint("BOTTOM", 0, 150)
+credits:SetPoint("BOTTOM", 0, 50)
 
 local test = CreateFrame("Button", baseName.."TestAlert", gui, "UIPanelButtonTemplate")
 test:SetSize(128, 25)
@@ -226,6 +226,12 @@ timeShown:SetPoint("TOPLEFT", intervalLabel, "BOTTOMLEFT", -12, -24)
 local position = createDropDown("Position", "position", "Position", {"Top", "Top Right", "Right", "Bottom Right", "Bottom", "Bottom Left", "Left", "Top Left"})
 position:SetPoint("TOPLEFT", timeShown, "BOTTOMLEFT", 0, -24)
 
+local width = createNumberSlider("Width", "width", "Width", SMALL, LARGE, 50, 1000, 1)
+width:SetPoint("TOPLEFT", position, "BOTTOMLEFT", 0, -24)
+
+local height = createNumberSlider("Height", "height", "Height", SMALL, LARGE, 50, 1000, 1)
+height:SetPoint("TOPLEFT", width, "BOTTOMLEFT", 0, -24)
+
 -- add event handlers
 
 gui.refresh = function()
@@ -239,6 +245,11 @@ gui.refresh = function()
 			slider.textInput:SetCursorPosition(0)
 		end
 	end
+
+	-- don't allow greater dimensions than screen size
+	width:SetWidth(GetScreenWidth()/15)
+	width:SetMinMaxValues(50, GetScreenWidth())
+	height:SetMinMaxValues(10, GetScreenHeight() / 4)
 end
 
 gui.okay = function()

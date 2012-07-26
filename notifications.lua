@@ -10,7 +10,6 @@ local options = {
 	position = "TOP", -- choose a side of the screen
 	width = 400,
 	height = 50,
-	iconSize = 32,
 
 	backdrop = "Interface\\ChatFrame\\ChatFrameBackground",
 	border = "Interface\\ChatFrame\\ChatFrameBackground",
@@ -47,7 +46,6 @@ local icon = f:CreateTexture(nil, "OVERLAY")
 f.icon = icon
 
 local iconBg = CreateFrame("Frame", nil, f)
-iconBg:SetPoint("CENTER", icon)
 f.iconBg = iconBg
 
 local sep = f:CreateTexture(nil, "BACKGROUND")
@@ -231,12 +229,13 @@ function Notifications:Update()
 	f:SetBackdropColor(options.bgRed, options.bgGreen, options.bgBlue, options.bgAlpha)
 	f:SetBackdropBorderColor(options.borderRed, options.borderGreen, options.borderBlue, options.borderAlpha)
 
-	local spacing = (options.height - (options.iconSize + (2 * options.borderSize))) / 2 -- distance between icon and banner border
+	icon:SetPoint("LEFT", f, "LEFT", 8, 0)
+	icon:SetPoint("TOP", f, "TOP", 0, -8)
+	icon:SetPoint("BOTTOM", f, "BOTTOM", 0, 8)
+	icon:SetWidth(icon:GetHeight())
 
-	icon:SetPoint("LEFT", f, "LEFT", spacing, 0)
-	icon:SetSize(options.iconSize, options.iconSize)
-
-	iconBg:SetSize(options.iconSize + (options.borderSize * 2), options.iconSize + (options.borderSize * 2))
+	iconBg:SetPoint("TOPLEFT", icon, -options.borderSize, options.borderSize)
+	iconBg:SetPoint("BOTTOMRIGHT", icon, options.borderSize, -options.borderSize)
 	iconBg:SetBackdrop({
 		edgeFile = options.backdrop,
 		edgeSize = options.borderSize,
@@ -245,19 +244,19 @@ function Notifications:Update()
 	iconBg:SetBackdropBorderColor(options.borderRed, options.borderGreen, options.borderBlue, options.borderAlpha)
 
 	sep:SetSize(options.separatorWidth, options.height)
-	sep:SetPoint("LEFT", icon, "RIGHT", spacing, 0)
+	sep:SetPoint("LEFT", icon, "RIGHT", 8, 0)
 	sep:SetTexture(options.separatorUseRGB == true and options.separatorRed, options.separatorGreen, options.separatorBlue or options.separatorTexture)
 	sep:SetAlpha(options.separatorAlpha)
 
-	title:SetPoint("TOPLEFT", sep, "TOPRIGHT", spacing, -spacing)
-	title:SetPoint("RIGHT", f, -spacing, 0)
+	title:SetPoint("TOPLEFT", sep, "TOPRIGHT", 8, -8)
+	title:SetPoint("RIGHT", f, -8, 0)
 	title:SetFont(options.font, options.fontSize + 2)
 	title:SetTextColor(options.textRed, options.textGreen, options.textBlue)
 	title:SetShadowOffset(options.shadowH, options.shadowV)
 	title:SetShadowColor(options.shadowRed, options.shadowGreen, options.shadowBlue)
 
-	text:SetPoint("BOTTOMLEFT", sep, "BOTTOMRIGHT", spacing, spacing)
-	text:SetPoint("RIGHT", f, -spacing, 0)
+	text:SetPoint("BOTTOMLEFT", sep, "BOTTOMRIGHT", 8, 8)
+	text:SetPoint("RIGHT", f, -8, 0)
 	text:SetFont(options.font, options.fontSize)
 	text:SetTextColor(options.textRed, options.textGreen, options.textBlue)
 	text:SetShadowOffset(options.shadowH, options.shadowV)
