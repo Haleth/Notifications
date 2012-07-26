@@ -45,11 +45,20 @@ version:SetText("v."..GetAddOnMetadata(..., "Version"))
 
 local credits = gui:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 credits:SetText("Notifications by Freethinker @ Steamwheedle Cartel - EU / Haleth on wowinterface.com")
-credits:SetPoint("BOTTOM", 0, 188)
+credits:SetPoint("BOTTOM", 0, 150)
+
+local test = CreateFrame("Button", baseName.."TestAlert", gui, "UIPanelButtonTemplate")
+test:SetSize(128, 25)
+test:SetPoint("BOTTOM", credits, "TOP", 0, 80)
+test:SetText("Test Banner")
+test:SetScript("OnClick", function()
+	SlashCmdList.TESTALERT()
+end)
 
 local checkboxes = {}
 local sliders = {}
 local dropdowns = {}
+local editboxes = {}
 
 local function toggle(f)
 	-- first we set the variable, then we set the cached setting
@@ -68,41 +77,99 @@ end
 
 local function createCheckBox(name, option, text)
 	local f = CreateFrame("CheckButton", baseName..name, gui, "InterfaceOptionsCheckButtonTemplate")
-	
+
 	f.option = option
 	f.Text:SetText(text)
-	
+
 	f:SetScript("OnClick", toggle)
-	
+
 	tinsert(checkboxes, f)
 
 	return f
 end
 
 local function onValueChanged(f, value)
+	value = floor(value*100)/100
 	NotificationsOptions[f.option] = value
 	Notifications.options[f.option] = value
-	
+
+	if f.textInput then
+		f.textInput:SetText(value)
+	end
+
 	Notifications:Update()
 end
 
 local function createSlider(name, option, text, lowText, highText, low, high, step)
 	local f = CreateFrame("Slider", baseName..name, gui, "OptionsSliderTemplate")
-	
+
 	BlizzardOptionsPanel_Slider_Enable(f)
-	
+
 	f.option = option
 	_G[baseName..name.."Text"]:SetText(text)
 	_G[baseName..name.."Low"]:SetText(lowText)
 	_G[baseName..name.."High"]:SetText(highText)
 	f:SetMinMaxValues(low, high)
 	f:SetValueStep(step)
-	
+
 	f:SetScript("OnValueChanged", onValueChanged)
-	
+
 	tinsert(sliders, f)
-	
+
 	return f
+end
+
+local function onEscapePressed(self)
+	self:ClearFocus()
+end
+
+local function onEnterPressed(self)
+	local slider = self:GetParent()
+	local min, max = slider:GetMinMaxValues()
+
+	local value = tonumber(self:GetText())
+	if value and value >= floor(min) and value <= floor(max) then
+		slider:SetValue(value)
+	else
+		self:SetText(floor(slider:GetValue()*100)/100)
+	end
+
+	self:ClearFocus()
+end
+
+local function createNumberSlider(name, option, text, lowText, highText, low, high, step)
+	local slider = createSlider(name, option, text, lowText, highText, low, high, step)
+
+	local f = CreateFrame("EditBox", baseName..name, slider)
+	f:SetAutoFocus(false)
+	f:SetWidth(75)
+	f:SetHeight(20)
+	f:SetMaxLetters(10)
+	f:SetFontObject(GameFontHighlight)
+	f:SetPoint("LEFT", slider, "RIGHT", 20, 0)
+
+	f:SetScript("OnEscapePressed", onEscapePressed)
+	f:SetScript("OnEnterPressed", onEnterPressed)
+
+	local left = f:CreateTexture(baseName..name.."Left", "BACKGROUND")
+	left:SetTexture("Interface\\ChatFrame\\UI-ChatInputBorder-Left2")
+	left:SetSize(32, 32)
+	left:SetPoint("LEFT", -8, 0)
+	local right = f:CreateTexture(baseName..name.."Right", "BACKGROUND")
+	right:SetTexture("Interface\\ChatFrame\\UI-ChatInputBorder-Right2")
+	right:SetSize(32, 32)
+	right:SetPoint("RIGHT", 5, 0)
+	local mid = f:CreateTexture(baseName..name.."Middle", "BACKGROUND")
+	mid:SetTexture("Interface\\ChatFrame\\UI-ChatInputBorder-Mid2")
+	mid:SetSize(0, 32)
+	mid:SetPoint("TOPLEFT", left, "TOPRIGHT")
+	mid:SetPoint("TOPRIGHT", right, "TOPLEFT")
+
+	slider.textInput = f
+
+	tinsert(editboxes, f)
+
+	return slider
 end
 
 local function OnClick(self)
@@ -110,7 +177,7 @@ local function OnClick(self)
 	UIDropDownMenu_SetSelectedID(f, self:GetID())
 	NotificationsOptions[f.option] = self.value
 	Notifications.options[f.option] = self.value
-	
+
 	Notifications:Update()
 end
 
@@ -124,21 +191,21 @@ local function initialize(self)
 	end
 end
 
-local function createDropDown(name, option, text, items) 
+local function createDropDown(name, option, text, items)
 	local f = CreateFrame("Button", baseName..name, gui, "UIDropDownMenuTemplate")
 
 	f.option = option
 	f.items = items
-	
+
 	local label = f:CreateFontString(nil, "BACKGROUND", "GameFontNormalSmall")
 	label:SetPoint("BOTTOMLEFT", f, "TOPLEFT", 16, 3)
 	label:SetText(text)
-	
+
 	UIDropDownMenu_Initialize(f, initialize)
 	UIDropDownMenu_SetWidth(f, 100)
-	
+
 	tinsert(dropdowns, f)
-	
+
 	return f
 end
 
@@ -147,13 +214,13 @@ playSounds:SetPoint("TOPLEFT", title, 0, -26)
 local animations = createCheckBox("Animations", "animations", "Animate the banner")
 animations:SetPoint("TOPLEFT", playSounds, "BOTTOMLEFT", 0, -8)
 
-local interval = createSlider("Interval", "interval", "Animation speed", SLOW, FAST, .1, 1, .1)
+local interval = createNumberSlider("Interval", "interval", "Animation speed", SLOW, FAST, .1, 1, .1)
 interval:SetPoint("TOPLEFT", animations, "BOTTOMLEFT", 12, -12)
 local intervalLabel = interval:CreateFontString(nil, nil, "GameFontHighlightSmall")
 intervalLabel:SetPoint("TOPLEFT", interval, "BOTTOMLEFT", 0, -16)
 intervalLabel:SetText("A slower animation speed ensures a smoother animation.")
 
-local timeShown = createSlider("TimeShown", "timeShown", "Time shown", TOAST_DURATION_SHORT, TOAST_DURATION_LONG, 1, 15, 1)
+local timeShown = createNumberSlider("TimeShown", "timeShown", "Time shown", TOAST_DURATION_SHORT, TOAST_DURATION_LONG, 1, 15, 1)
 timeShown:SetPoint("TOPLEFT", intervalLabel, "BOTTOMLEFT", -12, -24)
 
 local position = createDropDown("Position", "position", "Position", {"Top", "Top Right", "Right", "Bottom Right", "Bottom", "Bottom Left", "Left", "Top Left"})
@@ -168,6 +235,9 @@ gui.refresh = function()
 
 	for _, slider in pairs(sliders) do
 		slider:SetValue(Notifications.options[slider.option])
+		if slider.textInput and slider.textInput:GetCursorPosition() == slider.textInput:GetNumLetters() then
+			slider.textInput:SetCursorPosition(0)
+		end
 	end
 end
 
@@ -180,7 +250,7 @@ gui.cancel = function()
 	-- copy the old values to the cache and to saved vars if they exist
 	copyTable(old, Notifications.options)
 	copyTableExisting(old, NotificationsOptions)
-	
+
 	Notifications:Update()
 	--gui.refresh()
 end
@@ -188,10 +258,10 @@ end
 gui:RegisterEvent("ADDON_LOADED")
 gui:SetScript("OnEvent", function()
 	gui:UnregisterEvent("ADDON_LOADED")
-	
+
 	-- backup the cache in case we call gui.cancel()
 	copyTable(Notifications.options, old)
-	
+
 	-- because dropdowns are "special" and don't play nicely with gui.refresh()
 	for _, dropdown in pairs(dropdowns) do
 		UIDropDownMenu_SetSelectedValue(dropdown, Notifications.options[dropdown.option])
@@ -201,7 +271,7 @@ end)
 --[[
 gui.default = function()
 	copyTable(C.defaults, AuroraConfig)
-	
+
 	updateFrames()
 	gui.refresh()
 
@@ -245,16 +315,22 @@ SLASH_NOTIFICATIONS1 = "/notifications"
 
 if Aurora or FreeUI then
 	local F = unpack(Aurora or FreeUI)
-	
+
+	F.Reskin(test)
+
 	for _, box in pairs(checkboxes) do
 		F.ReskinCheck(box)
 	end
-	
+
 	for _, slider in pairs(sliders) do
 		F.ReskinSlider(slider)
 	end
-	
+
 	for _, dropdown in pairs(dropdowns) do
 		F.ReskinDropDown(dropdown)
+	end
+
+	for _, editbox in pairs(editboxes) do
+		F.ReskinInput(editbox)
 	end
 end
