@@ -229,10 +229,11 @@ function Notifications:Update()
 	f:SetBackdropColor(options.bgRed, options.bgGreen, options.bgBlue, options.bgAlpha)
 	f:SetBackdropBorderColor(options.borderRed, options.borderGreen, options.borderBlue, options.borderAlpha)
 
+	icon:ClearAllPoints()
 	icon:SetPoint("LEFT", f, "LEFT", 8, 0)
 	icon:SetPoint("TOP", f, "TOP", 0, -8)
 	icon:SetPoint("BOTTOM", f, "BOTTOM", 0, 8)
-	icon:SetWidth(icon:GetHeight())
+	icon:SetWidth(options.height - 16)
 
 	iconBg:SetPoint("TOPLEFT", icon, -options.borderSize, options.borderSize)
 	iconBg:SetPoint("BOTTOMRIGHT", icon, options.borderSize, -options.borderSize)
