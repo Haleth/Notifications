@@ -90,8 +90,13 @@ end
 local function fadeTimer()
 	local last = 0
 	f:SetScript("OnUpdate", function(self, elapsed)
+		local width = f:GetWidth()
+		if width > options.width then
+			self:SetWidth(width - (options.interval*100))
+		end
 		last = last + elapsed
 		if last >= options.timeShown then
+			self:SetWidth(options.width)
 			self:SetScript("OnUpdate", nil)
 			hideBanner()
 		end
@@ -266,10 +271,21 @@ end
 
 -- Mouse events
 
+local function expand(self)
+	local width = self:GetWidth()
+
+	if text:IsTruncated() and width < GetScreenWidth() then
+		self:SetWidth(width+(options.interval*100))
+	else
+		self:SetScript("OnUpdate", nil)
+	end
+end
+
 f:SetScript("OnEnter", function(self)
 	self:SetScript("OnUpdate", nil)
 	self:SetScale(1)
 	self:SetAlpha(1)
+	self:SetScript("OnUpdate", expand)
 end)
 
 f:SetScript("OnLeave", fadeTimer)
