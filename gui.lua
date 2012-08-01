@@ -137,16 +137,21 @@ local function onEnterPressed(self)
 	self:ClearFocus()
 end
 
-local function createNumberSlider(name, option, text, lowText, highText, low, high, step)
+local function createNumberSlider(name, option, text, lowText, highText, low, high, step, alignRight)
 	local slider = createSlider(name, option, text, lowText, highText, low, high, step)
 
 	local f = CreateFrame("EditBox", baseName..name, slider)
 	f:SetAutoFocus(false)
-	f:SetWidth(75)
+	f:SetWidth(60)
 	f:SetHeight(20)
-	f:SetMaxLetters(10)
+	f:SetMaxLetters(8)
 	f:SetFontObject(GameFontHighlight)
-	f:SetPoint("LEFT", slider, "RIGHT", 20, 0)
+
+	if alignRight then
+		slider:SetPoint("RIGHT", f, "LEFT", -20, 0)
+	else
+		f:SetPoint("LEFT", slider, "RIGHT", 20, 0)
+	end
 
 	f:SetScript("OnEscapePressed", onEscapePressed)
 	f:SetScript("OnEnterPressed", onEnterPressed)
@@ -210,27 +215,27 @@ local function createDropDown(name, option, text, items)
 end
 
 local playSounds = createCheckBox("PlaySounds", "playSounds", "Play sound")
-playSounds:SetPoint("TOPLEFT", title, 0, -26)
+playSounds:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -26)
 local animations = createCheckBox("Animations", "animations", "Animate the banner")
 animations:SetPoint("TOPLEFT", playSounds, "BOTTOMLEFT", 0, -8)
 
 local interval = createNumberSlider("Interval", "interval", "Animation speed", SLOW, FAST, .1, 1, .1)
-interval:SetPoint("TOPLEFT", animations, "BOTTOMLEFT", 12, -12)
+interval:SetPoint("TOPLEFT", animations, "BOTTOMLEFT", 16, -24)
 local intervalLabel = interval:CreateFontString(nil, nil, "GameFontHighlightSmall")
 intervalLabel:SetPoint("TOPLEFT", interval, "BOTTOMLEFT", 0, -16)
 intervalLabel:SetText("A slower animation speed ensures a smoother animation.")
 
 local timeShown = createNumberSlider("TimeShown", "timeShown", "Time shown", TOAST_DURATION_SHORT, TOAST_DURATION_LONG, 1, 15, 1)
-timeShown:SetPoint("TOPLEFT", intervalLabel, "BOTTOMLEFT", -12, -24)
+timeShown:SetPoint("TOPLEFT", intervalLabel, "BOTTOMLEFT", 0, -24)
 
 local position = createDropDown("Position", "position", "Position", {"Top", "Top Right", "Right", "Bottom Right", "Bottom", "Bottom Left", "Left", "Top Left"})
-position:SetPoint("TOPLEFT", timeShown, "BOTTOMLEFT", 0, -24)
+position:SetPoint("TOPRIGHT", version, "BOTTOMRIGHT", 0, -26)
 
-local width = createNumberSlider("Width", "width", "Width", SMALL, LARGE, 50, 1000, 1)
-width:SetPoint("TOPLEFT", position, "BOTTOMLEFT", 0, -24)
+local width = createNumberSlider("Width", "width", "Width", SMALL, LARGE, 50, 1000, 1, true)
+width.textInput:SetPoint("TOPRIGHT", position, "BOTTOMRIGHT", -18, -24)
 
-local height = createNumberSlider("Height", "height", "Height", SMALL, LARGE, 50, 1000, 1)
-height:SetPoint("TOPLEFT", width, "BOTTOMLEFT", 0, -24)
+local height = createNumberSlider("Height", "height", "Height", SMALL, LARGE, 50, 1000, 1, true)
+height.textInput:SetPoint("TOPRIGHT", width.textInput, "BOTTOMRIGHT", 0, -24)
 
 -- add event handlers
 
@@ -246,9 +251,8 @@ gui.refresh = function()
 		end
 	end
 
-	-- don't allow greater dimensions than screen size
-	width:SetWidth(GetScreenWidth()/15)
-	width:SetMinMaxValues(50, GetScreenWidth())
+	-- don't allow huge dimensions
+	width:SetMinMaxValues(50, GetScreenWidth() / 1.5)
 	height:SetMinMaxValues(10, GetScreenHeight() / 4)
 end
 

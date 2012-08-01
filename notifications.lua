@@ -137,13 +137,14 @@ local function display(name, message, clickFunc, texture, ...)
 
 	if type(texture) == "string" then
 		icon:SetTexture(texture)
+
+		if ... then
+			icon:SetTexCoord(...)
+		else
+			icon:SetTexCoord(.08, .92, .08, .92)
+		end
 	else
 		icon:SetTexture(options.defaultIcon)
-	end
-
-	if ... then
-		icon:SetTexCoord(...)
-	else
 		icon:SetTexCoord(.08, .92, .08, .92)
 	end
 
@@ -274,7 +275,7 @@ end
 local function expand(self)
 	local width = self:GetWidth()
 
-	if text:IsTruncated() and width < GetScreenWidth() then
+	if text:IsTruncated() and width < (GetScreenWidth() / 1.5) then
 		self:SetWidth(width+(options.interval*100))
 	else
 		self:SetScript("OnUpdate", nil)
@@ -305,21 +306,47 @@ end)
 -- Load saved variables if present
 
 f:RegisterEvent("ADDON_LOADED")
-f:SetScript("OnEvent", function(self, _, addon)
-	if addon ~= "Notifications" then return end
-	self:UnregisterEvent("ADDON_LOADED")
-
-	if not NotificationsOptions then NotificationsOptions = {} end
-
-	local vars = NotificationsOptions
-
-	for option in pairs(options) do
-		if vars[option] ~= nil then
-			options[option] = vars[option]
+f:RegisterEvent("PLAYER_LOGIN")
+f:RegisterEvent("PLAYER_LOGOUT")
+f:SetScript("OnEvent", function(self, event, addon)
+	if event == "PLAYER_LOGIN" then
+		if NotificationsStorage and #NotificationsStorage > 0 then
+			for _, alert in next, NotificationsStorage do
+				tinsert(incoming, alert)
+			end
+			handleIncoming()
+			NotificationsStorage = nil
 		end
-	end
+	elseif event == "PLAYER_LOGOUT" then
+		if #incoming > 0 then
+			NotificationsStorage = {}
+			for i = 1, #incoming do
+				NotificationsStorage[i] = {}
+				for _, data in pairs(incoming[i]) do
+					if type(data) == "function" then
+						tinsert(NotificationsStorage[i], 0) -- nil values can't be stored apparently
+					else
+						tinsert(NotificationsStorage[i], data)
+					end
+				end
+			end
+		end
+	else
+		if addon ~= "Notifications" then return end
+		self:UnregisterEvent("ADDON_LOADED")
 
-	Notifications:Update()
+		if not NotificationsOptions then NotificationsOptions = {} end
+
+		local vars = NotificationsOptions
+
+		for option in pairs(options) do
+			if vars[option] ~= nil then
+				options[option] = vars[option]
+			end
+		end
+
+		Notifications:Update()
+	end
 end)
 
 -- Test function
