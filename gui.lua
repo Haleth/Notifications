@@ -240,7 +240,6 @@ local function createDropDown(name, option, text, items)
 	label:SetPoint("BOTTOMLEFT", f, "TOPLEFT", 16, 3)
 	label:SetText(text)
 
-	UIDropDownMenu_Initialize(f, initialize)
 	UIDropDownMenu_SetWidth(f, 100)
 
 	tinsert(dropdowns, f)
@@ -285,6 +284,11 @@ gui.refresh = function()
 		end
 	end
 
+	for _, dropdown in pairs(dropdowns) do
+		UIDropDownMenu_Initialize(dropdown, initialize)
+		UIDropDownMenu_SetSelectedValue(dropdown, Notifications.options[dropdown.option])
+	end
+
 	-- don't allow huge dimensions
 	width:SetMinMaxValues(50, GetScreenWidth() / 1.5)
 	height:SetMinMaxValues(10, GetScreenHeight() / 4)
@@ -316,11 +320,6 @@ gui:SetScript("OnEvent", function()
 
 	-- backup the cache in case we call gui.cancel()
 	copyTable(Notifications.options, old)
-
-	-- because dropdowns are "special" and don't play nicely with gui.refresh()
-	for _, dropdown in pairs(dropdowns) do
-		UIDropDownMenu_SetSelectedValue(dropdown, Notifications.options[dropdown.option])
-	end
 end)
 
 -- easy slash command
