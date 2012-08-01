@@ -1,5 +1,39 @@
 local baseName = "NotificationsOptionsPanel"
 
+-- default settings. Don't touch this!
+local defaults = {
+	playSounds = true,
+	animations = true, -- scale and fade the banner on show/hide. Not recommended for slow PCs.
+	timeShown = 5, -- amount of time the banner is shown before it disappears. Mousing over the banner keeps it shown.
+	interval = 0.1, -- difference in opacity/scale per new frame when the banner animates. Lower = smoother, but also slower.
+
+	position = "TOP", -- choose a side of the screen
+	width = 400,
+	height = 50,
+
+	backdrop = "Interface\\ChatFrame\\ChatFrameBackground",
+	border = "Interface\\ChatFrame\\ChatFrameBackground",
+	borderSize = 1,
+	inset = 0, -- how far into the frame the background is drawn.
+
+	bgRed = 0, bgGreen = 0, bgBlue = 0, bgAlpha = .5, -- colour of the backdrop.
+	borderRed = 0, borderGreen = 0, borderBlue = 0, borderAlpha = 1, -- colour of the border.
+
+	separatorWidth = 1,
+	separatorUseRGB = true, -- use a plain colour instead of texture for separator
+	separatorTexture = "", -- only applies with separatorUseRGB disabled
+	separatorRed = 0, separatorGreen = 0, separatorBlue = 0, -- only applies with separatorUseRGB enabled
+	separatorAlpha = 1,
+
+	font = "FONTS\\ARIALN.TTF",
+	fontSize = 14,
+	textRed = 1, textGreen = 1, textBlue = 1, -- text colour.
+	shadowRed = 0, shadowGreen = 0, shadowBlue = 0, -- font shadow colour.
+	shadowH = 1, shadowV = -1, -- horizontal and vertical offset for font shadow.
+
+	defaultIcon = "Interface\\Icons\\achievement_general", -- icon shown when no texture is specified for the banner icon.
+}
+
 -- these variables are loaded on init and updated only on gui.okay. Calling gui.cancel resets the saved vars to these
 local old = {}
 
@@ -267,7 +301,13 @@ gui.cancel = function()
 	copyTableExisting(old, NotificationsOptions)
 
 	Notifications:Update()
-	--gui.refresh()
+end
+
+gui.default = function()
+	copyTable(defaults, Notifications.options)
+	copyTable(defaults, NotificationsOptions)
+
+	Notifications:Update()
 end
 
 gui:RegisterEvent("ADDON_LOADED")
@@ -282,42 +322,6 @@ gui:SetScript("OnEvent", function()
 		UIDropDownMenu_SetSelectedValue(dropdown, Notifications.options[dropdown.option])
 	end
 end)
-
---[[
-gui.default = function()
-	copyTable(C.defaults, AuroraConfig)
-
-	updateFrames()
-	gui.refresh()
-
-colourBox:SetScript("OnClick", function(self)
-	if self:GetChecked() then
-		AuroraConfig.useCustomColour = true
-		colourButton:Enable()
-	else
-		AuroraConfig.useCustomColour = false
-		colourButton:Disable()
-	end
-end)
-
-local function setColour()
-	local r, g, b = ColorPickerFrame:GetColorRGB()
-	AuroraConfig.customColour.r, AuroraConfig.customColour.g, AuroraConfig.customColour.b = r, g, b
-end
-
-local function resetColour(restore)
-	AuroraConfig.customColour.r, AuroraConfig.customColour.g, AuroraConfig.customColour.b = restore.r, restore.g, restore.b
-end
-
-colourButton:SetScript("OnClick", function()
-	local r, g, b = AuroraConfig.customColour.r, AuroraConfig.customColour.g, AuroraConfig.customColour.b
-	ColorPickerFrame:SetColorRGB(r, g, b)
-	ColorPickerFrame.previousValues = {r = r, g = g, b = b}
-	ColorPickerFrame.func = setColour
-	ColorPickerFrame.cancelFunc = resetColour
-	ColorPickerFrame:Hide()
-	ColorPickerFrame:Show()
-end)]]
 
 -- easy slash command
 
