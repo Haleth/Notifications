@@ -301,6 +301,13 @@ f:SetScript("OnMouseUp", function(self, button)
 	if button ~= "RightButton" and f.clickFunc then
 		f.clickFunc()
 	end
+
+	-- dismiss all
+	if IsShiftKeyDown() then
+		handler:SetScript("OnUpdate", nil)
+		incoming = {}
+		processing = false
+	end
 end)
 
 -- Load saved variables if present
