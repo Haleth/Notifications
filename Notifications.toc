@@ -4,7 +4,7 @@
 ## Notes: Framework for addons to display notifications.
 ## Author: Haleth/Freethinker
 ## OptionalDeps: Aurora, FreeUI
-## SavedVariables: NotificationsOptions
+## SavedVariables: NotificationsOptions, NotificationsStorage
 
 notifications.lua
 gui.lua
