@@ -1,4 +1,4 @@
-## Interface: 40300
+## Interface: 50001
 ## Version: 2.0
 ## Title: Notifications
 ## Notes: Framework for addons to display notifications.
