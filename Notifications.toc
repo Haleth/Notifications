@@ -1,5 +1,5 @@
-## Interface: 50001
-## Version: 2.0
+## Interface: 50200
+## Version: 2.0.1
 ## Title: Notifications
 ## Notes: Framework for addons to display notifications.
 ## Author: Haleth/Freethinker
